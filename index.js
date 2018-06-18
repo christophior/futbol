@@ -45,6 +45,21 @@ document.addEventListener('click', (event) => {
 	}
 })
 
+const updateData = () => {
+	getData((data) => {
+		console.log('Got data!')
+		console.log(data);
+		let followedMatchData = null;
+
+		if (followedMatch) {
+			followedMatchData = data.find(m => m.matchId == followedMatch);
+		}
+
+		ipcRenderer.send('data-updated', followedMatchData)
+		updateView(groupByDays(data))
+	})
+}
+
 const getData = (next) => {
 	console.log(`Getting data`)
 	const scheduleUrl = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`,
@@ -56,7 +71,7 @@ const getData = (next) => {
 			let data = response.data && response.data.Results || [],
 				liveData = response2.data && response2.data.Results || [];
 
-			return next(normalizeData(updateLiveData(data, liveData)));
+			return next(normalizeData(substituteLiveData(data, liveData)));
 		}))
 		.catch(function (error) {
 			console.log(error)
@@ -65,7 +80,7 @@ const getData = (next) => {
 		})
 }
 
-const updateLiveData = (data, liveData) => {
+const substituteLiveData = (data, liveData) => {
 	data.forEach((match, index) => {
 		let isLiveMatch = match.MatchStatus === 3;
 		let foundLiveMatch = isLiveMatch ? liveData.find(m => m.IdMatch == match.IdMatch) : null;
@@ -76,20 +91,6 @@ const updateLiveData = (data, liveData) => {
 	});
 
 	return data;
-}
-
-const updateData = () => {
-	getData((data) => {
-		console.log('Got data!')
-		console.log(data);
-		let followedMatchData = null;
-		if (followedMatch) {
-			followedMatchData = data.find(m => m.matchId == followedMatch);
-		}
-
-		ipcRenderer.send('data-updated', followedMatchData)
-		updateView(groupByDays(data))
-	})
 }
 
 const normalizeData = (list) => {
@@ -137,24 +138,23 @@ const groupByDays = (list) => {
 const updateView = (data) => {
 	// no data
 	if (data.length === 0) {
-		document.querySelector('.tabContent1').innerHTML = '<div class="summary">Error Loading Data</div>'
-	}
+		$('.tabContent1').html('<div class="summary"><b>Problem Loading Data!</b></div>');
+	} else {
+		let tableEntrys = []
 
-	let tableEntrys = []
+		data.forEach((group) => {
+			let tableBody = `<thead><tr><th><b>${group.day}</b></th></tr></thead>`
 
-	data.forEach((group) => {
-		let tableBody = `<thead><tr><th><b>${group.day}</b></th></tr></thead>`
+			let { matches } = group
 
-		let { matches } = group
+			tableBody += '<tbody>'
 
-		tableBody += '<tbody>'
+			matches.forEach(match => {
+				let { matchId, matchLink, liveMatch, liveMatchTime, time } = match;
+				let { homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag } = match;
 
-		matches.forEach(match => {
-			let { matchId, matchLink, liveMatch, liveMatchTime, time } = match;
-			let { homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag } = match;
-
-			if (match.futureMatch) {
-				tableBody += `
+				if (match.futureMatch) {
+					tableBody += `
 				<tr data-id="${matchId}" data-article="${matchLink}">
 					<td>
 						<div class="matches">
@@ -170,8 +170,8 @@ const updateView = (data) => {
 						</div>
 					</td>
 				</tr>`
-			} else {
-				tableBody += `
+				} else {
+					tableBody += `
 				<tr data-id="${matchId}" data-article="${matchLink}" class="selectable ${liveMatch ? 'js-followMatch' : ''} ${matchId == followedMatch ? 'followedMatch' : ''}">
 					<td>
 						<div class="matches">
@@ -189,14 +189,15 @@ const updateView = (data) => {
 						</div>
 					</td>
 				</tr>`
-			}
+				}
+			});
+
+			tableBody += '</tbody>'
+			tableEntrys.push(tableBody);
 		});
 
-		tableBody += '</tbody>'
-		tableEntrys.push(tableBody);
-	});
-
-	document.querySelector('.tabContent1').innerHTML = `<table class="table">${tableEntrys.join('')}</table>`;
+		$('.tabContent1').html(`<table class="table">${tableEntrys.join('')}</table>`);
+	}
 }
 
 const switchTab = (activeTab) => {
