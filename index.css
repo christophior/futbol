@@ -70,7 +70,7 @@
 .footer-link {
   padding-top: 8px;
   padding-left: 10px;
-  font-size: calc(var(--font-size) - 4px);
+  font-size: calc(var(--font-size) - 2px);
   float: left;
 }
 
@@ -79,24 +79,48 @@
 }
 
 .flags {
-	width: 25px;
-}
-
-.match {
-	flex-grow: 1;
-	text-align: -webkit-center;
+	width: 24px;
 }
 
 .match img {
 	vertical-align: sub;
+	margin-right: 4px;
+}
+
+.hidden {
+	display: none;
+}
+
+.live {
+	font-weight: 700;
+	color: #ff0000;
 }
 
 td {
 	pointer-events: none;
 	display: flex;
 	flex-direction: row;
+	width: 100%;
 }
 
-.hidden {
-	display: none;
+.matches {
+	float: left;
+	text-align: left;
+	width: 75%;
+	border-right: 1px solid #dedddd;
+}
+
+.match {
+	padding: 2px 0;
+}
+
+.score {
+	float: right;
+	padding-right: 5px;
+}
+
+.date {
+	width: 25%;
+	text-align: center;
+	margin: auto;
 }

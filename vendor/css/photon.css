@@ -2252,7 +2252,7 @@ th {
 
 th,
 td {
-  padding: 2px 15px;
+  padding: 2px 0px 2px 15px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

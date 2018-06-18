@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, Tray } = require('electron')
 const path = require('path')
+const moment = require('moment')
 
 const assetsDirectory = path.join(__dirname, 'assets')
 
@@ -27,7 +28,7 @@ const createTray = () => {
 		toggleWindow()
 
 
-		// Show devtools when command clicked
+		// Show devtools
 		window.openDevTools({ mode: 'detach' })
 	})
 }
@@ -90,7 +91,7 @@ ipcMain.on('show-window', () => {
 })
 
 ipcMain.on('data-updated', (event, weather) => {
-	// tray.setTitle(`test`)
+	tray.setTitle(`loaded`)
 	// tray.setTitle(`${Math.round(weather.currently.apparentTemperature)}°`)
 
 	// Show summary and last refresh time as hover tooltip

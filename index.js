@@ -54,15 +54,19 @@ const normalizeData = (list) => {
 		return opponentsTBD || previousDayMatch ? null : {
 			time: match.Date,
 			futureMatch: home.Score === null || away.Score === null,
+			liveMatch: match.MatchStatus === 3,
+			liveMatchTime: match.MatchTime || '',
+			matchLink: `https://www.fifa.com/worldcup/matches/match/${match.IdMatch}/#match-summary`,
 			homeTeam: home.TeamName[0].Description,
-			homeFlag: home.PictureUrl.replace('{format}', 'fwc2018').replace('{size}', '1'),
+			homeFlag: `assets/flags/${(home.IdCountry || '').toLowerCase()}.png`,
 			homeScore: home.Score,
 			awayTeam: away.TeamName[0].Description,
-			awayFlag: away.PictureUrl.replace('{format}', 'fwc2018').replace('{size}', '1'),
+			awayFlag: `assets/flags/${(away.IdCountry || '').toLowerCase()}.png`,
 			awayScore: away.Score
 		};
-	}).filter(m => m !== null).slice(0, 10);
+	}).filter(m => m !== null);
 };
+
 
 const groupByDays = (list) => {
 	let days = [];
@@ -90,36 +94,44 @@ const updateView = (data) => {
 	let tableEntrys = []
 
 	data.forEach((group) => {
-		let tableBody = `<thead><tr><th><b>${group.day}</b></th></tr></thead>`
+		let tableBody = `<thead> <tr><th><b>${group.day}</b></th></tr></thead> `
 
 		let { matches } = group
 
 		tableBody += '<tbody>'
 
 		matches.forEach(match => {
-			let { homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag, time } = match;
+			let { liveMatch, liveMatchTime, homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag, time } = match;
 
 			if (match.futureMatch) {
 				tableBody += `<tr>
 					<td>
-						<div class="match">
-							<span>
-								${homeTeam} <img src="${homeFlag}" class="flags"> <b>&nbsp;&nbsp;${moment(time).format('hh:mm A')}&nbsp;&nbsp;</b> <img src="${awayFlag}" class="flags"> ${awayTeam}
-							</span>
+						<div class="matches">
+							<div class="match">
+								<img src="${homeFlag}" class="flags"> ${homeTeam}
+							</div>
+							<div class="match">
+								<img src="${awayFlag}" class="flags"> ${awayTeam}
+							</div>
 						</div>
+						<div class="date"><b>${moment(time).format('hh:mm A')}</b></div>
 					</td>
 				</tr>`
 			} else {
 				tableBody += `<tr>
 					<td>
-						<div class="match">
-							<span>
-								${homeTeam}
-								<img src="${homeFlag}" class="flags">
-								<b>&nbsp;&nbsp;${homeScore} - ${awayScore}&nbsp;&nbsp;</b>
-								<img src="${awayFlag}" class="flags">
-								${awayTeam}
-							</span>
+						<div class="matches">
+							<div class="match">
+								<img src="${homeFlag}" class="flags"> ${homeTeam}
+								<b class="score">${homeScore}</b>
+							</div>
+							<div class="match">
+								<img src="${awayFlag}" class="flags"> ${awayTeam}
+								<b class="score">${awayScore}</b>
+							</div>
+						</div>
+						<div class="date">
+							${liveMatch ? `<span class="icon icon-record live">${liveMatchTime ? `&nbsp;(${liveMatchTime})&nbsp;` : ``}</span>` : `FT`}
 						</div>
 					</td>
 				</tr>`
