@@ -11,14 +11,19 @@ document.addEventListener('click', (event) => {
 		updateData()
 	} else if (event.target.classList.contains('js-quit-action')) {
 		window.close()
+	} else if (event.target.classList.contains('js-tab1')) {
+		switchTab('1');
+	} else if (event.target.classList.contains('js-tab2')) {
+		switchTab('2');
 	}
 })
 
 const getData = (next) => {
 	console.log(`Getting data`)
-	const url = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`
+	const scheduleUrl = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`,
+		groupsUrl = ``;
 
-	axios.get(url)
+	axios.get(scheduleUrl)
 		.then(function (response) {
 			let data = response.data && response.data.Results || [];
 			return next(groupByDays(normalizeData(data)))
@@ -28,59 +33,6 @@ const getData = (next) => {
 			console.error('Please try again later.')
 			return next([])
 		})
-}
-
-const updateView = (data) => {
-	// no data
-	if (data.length === 0) {
-		document.querySelector('.pane').innerHTML = '<div class="summary js-summary">Error Loading Data</div>'
-	}
-
-	let tableEntrys = []
-
-	data.forEach((group) => {
-		let tableBody = `<thead><tr><th><b>${group.day}</b></th></tr></thead>`
-
-		let { matches } = group
-
-		tableBody += '<tbody>'
-
-		matches.forEach(match => {
-			let { homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag, time } = match;
-
-			if (match.futureMatch) {
-				tableBody += `<tr>
-					<td>
-						<div>${moment(time).format('hh:mm A')}: </div>
-						<div class="match">
-							<img src="${homeFlag}" class="flags">
-							<span>${homeTeam} - ${awayTeam}</span>
-							<img src="${awayFlag}" class="flags">
-						</div>
-					</td>
-				</tr>`
-			} else {
-				tableBody += `<tr>
-					<td>
-						<div class="match">
-							<img src="${homeFlag}" class="flags">
-							<span>${homeTeam} <b>${homeScore} - ${awayScore}</b> ${awayTeam}</span>
-							<img src="${awayFlag}" class="flags">
-						</div>
-					</td>
-				</tr>`
-			}
-		});
-
-		tableBody += '</tbody>'
-		tableEntrys.push(tableBody);
-	});
-
-	document.querySelector('.pane').innerHTML = `<table class="table">${tableEntrys.join('')}</table>`;
-}
-
-
-const sendNotification = (data) => {
 }
 
 const updateData = () => {
@@ -128,6 +80,67 @@ const groupByDays = (list) => {
 
 	return days;
 };
+
+const updateView = (data) => {
+	// no data
+	if (data.length === 0) {
+		document.querySelector('.tabContent1').innerHTML = '<div class="summary">Error Loading Data</div>'
+	}
+
+	let tableEntrys = []
+
+	data.forEach((group) => {
+		let tableBody = `<thead><tr><th><b>${group.day}</b></th></tr></thead>`
+
+		let { matches } = group
+
+		tableBody += '<tbody>'
+
+		matches.forEach(match => {
+			let { homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag, time } = match;
+
+			if (match.futureMatch) {
+				tableBody += `<tr>
+					<td>
+						<div class="match">
+							<span>
+								${homeTeam} <img src="${homeFlag}" class="flags"> <b>&nbsp;&nbsp;${moment(time).format('hh:mm A')}&nbsp;&nbsp;</b> <img src="${awayFlag}" class="flags"> ${awayTeam}
+							</span>
+						</div>
+					</td>
+				</tr>`
+			} else {
+				tableBody += `<tr>
+					<td>
+						<div class="match">
+							<span>
+								${homeTeam}
+								<img src="${homeFlag}" class="flags">
+								<b>&nbsp;&nbsp;${homeScore} - ${awayScore}&nbsp;&nbsp;</b>
+								<img src="${awayFlag}" class="flags">
+								${awayTeam}
+							</span>
+						</div>
+					</td>
+				</tr>`
+			}
+		});
+
+		tableBody += '</tbody>'
+		tableEntrys.push(tableBody);
+	});
+
+	document.querySelector('.tabContent1').innerHTML = `<table class="table">${tableEntrys.join('')}</table>`;
+}
+
+const switchTab = (activeTab) => {
+	let inactiveTab = activeTab === '1' ? '2' : '1';
+	document.querySelector(`.js-tab${activeTab}`).classList.add('active')
+	document.querySelector(`.js-tab${inactiveTab}`).classList.remove('active')
+
+	document.querySelector(`.tabContent${activeTab}`).classList.remove('hidden')
+	document.querySelector(`.tabContent${inactiveTab}`).classList.add('hidden')
+}
 
 // Refresh data every 10 minutes
 const tenMinutes = 10 * 60 * 1000
