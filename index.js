@@ -68,7 +68,7 @@ const updateData = () => {
 
 		let followedMatchData = null;
 		if (followedMatch) {
-			followedMatchData = data.find(m => m.matchId == followedMatch);
+			followedMatchData = data.find(m => m.matchId == followedMatch && m.MatchStatus === 3);
 		}
 
 		ipcRenderer.send('data-updated', followedMatchData)
@@ -86,7 +86,7 @@ const normalizeData = (list) => {
 
 		return opponentsTBD || previousDayMatch ? null : {
 			time: match.Date,
-			futureMatch: home.Score === null || away.Score === null,
+			futureMatch: home.Score === null || away.Score === null || match.MatchStatus !== 0,
 			liveMatch: match.MatchStatus === 3,
 			liveMatchTime: match.MatchTime || '',
 			matchId: match.IdMatch,
