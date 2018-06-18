@@ -120,6 +120,10 @@ td {
 	background: #cccccc;
 }
 
+.followedMatch {
+	background: #b9ffb9;
+}
+
 .matches {
 	float: left;
 	text-align: left;

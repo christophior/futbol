@@ -17,25 +17,28 @@ document.addEventListener('click', (event) => {
 		followedMatch = null;
 		updateData();
 		$('.js-stop-button').addClass('hidden');
+		ipcRenderer.send('hide-window');
 	} else if (event.target.classList.contains('js-tab1')) {
 		switchTab('1');
 	} else if (event.target.classList.contains('js-tab2')) {
 		switchTab('2');
 	} else if ($(event.target).closest('tr').hasClass('selectable')) {
 		let tr = $(event.target).closest('tr')
+		// follow match
 		if (tr.hasClass('js-followMatch')) {
 			let matchId = tr.data('id');
 			console.log('following', matchId);
 			followedMatch = matchId;
 			$('.js-stop-button').removeClass('hidden');
 
-		} else {
+		} else { // open article if a past match
 			let article = tr.data('article');
-			console.log(article)
-			shell.openExternal(article)
-			event.preventDefault()
+			console.log(article);
+			shell.openExternal(article);
+			event.preventDefault();
 		}
 		updateData();
+		ipcRenderer.send('hide-window');
 	}
 })
 
@@ -77,7 +80,7 @@ const normalizeData = (list) => {
 
 		let opponentsTBD = !home.IdCountry || !away.IdCountry,
 			previousDayMatch = moment(match.Date).diff(moment(), 'days') < 0;
-		// MatchStatus, MatchTime ?
+
 		return opponentsTBD || previousDayMatch ? null : {
 			time: match.Date,
 			futureMatch: home.Score === null || away.Score === null,
@@ -129,10 +132,12 @@ const updateView = (data) => {
 		tableBody += '<tbody>'
 
 		matches.forEach(match => {
-			let { matchId, matchLink, liveMatch, liveMatchTime, homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag, time } = match;
+			let { matchId, matchLink, liveMatch, liveMatchTime, time } = match;
+			let { homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag } = match;
 
 			if (match.futureMatch) {
-				tableBody += `<tr data-id="${matchId}" data-article="${matchLink}">
+				tableBody += `
+				<tr data-id="${matchId}" data-article="${matchLink}">
 					<td>
 						<div class="matches">
 							<div class="match">
@@ -148,7 +153,8 @@ const updateView = (data) => {
 					</td>
 				</tr>`
 			} else {
-				tableBody += `<tr data-id="${matchId}" data-article="${matchLink}" class="selectable ${liveMatch ? `js-followMatch` : ``}">
+				tableBody += `
+				<tr data-id="${matchId}" data-article="${matchLink}" class="selectable ${liveMatch ? 'js-followMatch' : ''} ${matchId == followedMatch ? 'followedMatch' : ''}">
 					<td>
 						<div class="matches">
 							<div class="match">
