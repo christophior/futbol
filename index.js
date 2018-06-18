@@ -48,27 +48,43 @@ document.addEventListener('click', (event) => {
 const getData = (next) => {
 	console.log(`Getting data`)
 	const scheduleUrl = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`,
+		liveUrl = `https://api.fifa.com/api/v1/live/football/now?language=en-GB`,
 		groupsUrl = ``;
 
-	axios.get(scheduleUrl)
-		.then(function (response) {
-			let data = response.data && response.data.Results || [];
-			return next(normalizeData(data))
-		})
+	axios.all([axios.get(scheduleUrl), axios.get(liveUrl)])
+		.then(axios.spread(function (response, response2) {
+			let data = response.data && response.data.Results || [],
+				liveData = response2.data && response2.data.Results || [];
+
+			return next(normalizeData(updateLiveData(data, liveData)));
+		}))
 		.catch(function (error) {
 			console.log(error)
-			console.error('Please try again later.')
-			return next([])
+			console.error('Please try again later.');
+			return next([]);
 		})
+}
+
+const updateLiveData = (data, liveData) => {
+	data.forEach((match, index) => {
+		let isLiveMatch = match.MatchStatus === 3;
+		let foundLiveMatch = isLiveMatch ? liveData.find(m => m.IdMatch == match.IdMatch) : null;
+
+		if (isLiveMatch && foundLiveMatch) {
+			data[index].MatchTime = foundLiveMatch.MatchTime
+		}
+	});
+
+	return data;
 }
 
 const updateData = () => {
 	getData((data) => {
 		console.log('Got data!')
-
+		console.log(data);
 		let followedMatchData = null;
 		if (followedMatch) {
-			followedMatchData = data.find(m => m.matchId == followedMatch && m.MatchStatus === 3);
+			followedMatchData = data.find(m => m.matchId == followedMatch);
 		}
 
 		ipcRenderer.send('data-updated', followedMatchData)
@@ -82,11 +98,11 @@ const normalizeData = (list) => {
 			away = match.Away || {};
 
 		let opponentsTBD = !home.IdCountry || !away.IdCountry,
-			previousDayMatch = moment(match.Date).diff(moment(), 'days') < 0;
+			previousDayMatch = match.MatchStatus !== 3 && moment(match.Date).diff(moment(), 'days') < 0;
 
 		return opponentsTBD || previousDayMatch ? null : {
 			time: match.Date,
-			futureMatch: home.Score === null || away.Score === null || match.MatchStatus !== 0,
+			futureMatch: home.Score === null || away.Score === null || (match.MatchStatus !== 0 && match.MatchStatus !== 3),
 			liveMatch: match.MatchStatus === 3,
 			liveMatchTime: match.MatchTime || '',
 			matchId: match.IdMatch,
@@ -193,8 +209,8 @@ const switchTab = (activeTab) => {
 }
 
 // Refresh data every 1 minute
-const oneMinutes = 1 * 60 * 1000
-setInterval(updateData, oneMinutes)
+const refreshRate = 1 * 60 * 1000
+setInterval(updateData, refreshRate)
 
 // Update initial weather when loaded
 document.addEventListener('DOMContentLoaded', updateData)
