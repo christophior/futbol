@@ -101,7 +101,6 @@ const normalizeData = (list) => {
 	}).filter(m => m !== null);
 };
 
-
 const groupByDays = (list) => {
 	let days = [];
 
