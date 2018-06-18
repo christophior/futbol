@@ -78,9 +78,6 @@
   color: var(--text-color);
 }
 
-.flags {
-	width: 24px;
-}
 
 .match img {
 	vertical-align: sub;
@@ -96,11 +93,31 @@
 	color: #ff0000;
 }
 
+th {
+	padding-left: 10px;
+}
+
 td {
-	pointer-events: none;
 	display: flex;
 	flex-direction: row;
 	width: 100%;
+}
+
+.flags {
+	width: 26px;
+}
+
+.noClick {
+	pointer-events: none;
+}
+
+.selectable:hover {
+	background: #f1f1f1;
+}
+
+.selectable:active {
+	color: white;
+	background: #cccccc;
 }
 
 .matches {
@@ -121,6 +138,7 @@ td {
 
 .date {
 	width: 25%;
+	font-weight: 600;
 	text-align: center;
 	margin: auto;
 }

@@ -29,7 +29,7 @@ const createTray = () => {
 
 
 		// Show devtools
-		window.openDevTools({ mode: 'detach' })
+		// window.openDevTools({ mode: 'detach' })
 	})
 }
 
@@ -90,11 +90,17 @@ ipcMain.on('show-window', () => {
 	showWindow()
 })
 
-ipcMain.on('data-updated', (event, weather) => {
-	tray.setTitle(`loaded`)
-	// tray.setTitle(`${Math.round(weather.currently.apparentTemperature)}°`)
+ipcMain.on('hide-window', () => {
+	if (window.isVisible()) {
+		window.hide()
+	}
+})
 
-	// Show summary and last refresh time as hover tooltip
-	// const time = new Date(weather.currently.time).toLocaleTimeString()
-	// tray.setToolTip(`${weather.currently.summary} at ${time}`)
+ipcMain.on('data-updated', (event, followedMatchData) => {
+	if (followedMatchData) {
+		let { homeTeam, homeScore, awayTeam, awayScore, liveMatchTime } = followedMatchData;
+		tray.setTitle(`${homeTeam} ${homeScore} - ${awayScore} ${awayTeam} (${liveMatchTime})`)
+	} else {
+		tray.setTitle('');
+	}
 })

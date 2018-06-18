@@ -2,19 +2,40 @@ const { ipcRenderer, shell } = require('electron')
 const axios = require('axios')
 const moment = require('moment')
 
+let followedMatch = null;
+
 document.addEventListener('click', (event) => {
 	if (event.target.href) {
 		// Open links in external browser
-		shell.openExternal(event.target.href)
-		event.preventDefault()
+		shell.openExternal(event.target.href);
+		event.preventDefault();
 	} else if (event.target.classList.contains('js-refresh-action')) {
-		updateData()
+		updateData();
 	} else if (event.target.classList.contains('js-quit-action')) {
-		window.close()
+		window.close();
+	} else if (event.target.classList.contains('js-stop-following-action')) {
+		followedMatch = null;
+		updateData();
+		$('.js-stop-button').addClass('hidden');
 	} else if (event.target.classList.contains('js-tab1')) {
 		switchTab('1');
 	} else if (event.target.classList.contains('js-tab2')) {
 		switchTab('2');
+	} else if ($(event.target).closest('tr').hasClass('selectable')) {
+		let tr = $(event.target).closest('tr')
+		if (tr.hasClass('js-followMatch')) {
+			let matchId = tr.data('id');
+			console.log('following', matchId);
+			followedMatch = matchId;
+			$('.js-stop-button').removeClass('hidden');
+
+		} else {
+			let article = tr.data('article');
+			console.log(article)
+			shell.openExternal(article)
+			event.preventDefault()
+		}
+		updateData();
 	}
 })
 
@@ -26,7 +47,7 @@ const getData = (next) => {
 	axios.get(scheduleUrl)
 		.then(function (response) {
 			let data = response.data && response.data.Results || [];
-			return next(groupByDays(normalizeData(data)))
+			return next(normalizeData(data))
 		})
 		.catch(function (error) {
 			console.log(error)
@@ -38,8 +59,14 @@ const getData = (next) => {
 const updateData = () => {
 	getData((data) => {
 		console.log('Got data!')
-		ipcRenderer.send('data-updated', data)
-		updateView(data)
+
+		let followedMatchData = null;
+		if (followedMatch) {
+			followedMatchData = data.find(m => m.matchId == followedMatch);
+		}
+
+		ipcRenderer.send('data-updated', followedMatchData)
+		updateView(groupByDays(data))
 	})
 }
 
@@ -56,6 +83,7 @@ const normalizeData = (list) => {
 			futureMatch: home.Score === null || away.Score === null,
 			liveMatch: match.MatchStatus === 3,
 			liveMatchTime: match.MatchTime || '',
+			matchId: match.IdMatch,
 			matchLink: `https://www.fifa.com/worldcup/matches/match/${match.IdMatch}/#match-summary`,
 			homeTeam: home.TeamName[0].Description,
 			homeFlag: `assets/flags/${(home.IdCountry || '').toLowerCase()}.png`,
@@ -94,17 +122,17 @@ const updateView = (data) => {
 	let tableEntrys = []
 
 	data.forEach((group) => {
-		let tableBody = `<thead> <tr><th><b>${group.day}</b></th></tr></thead> `
+		let tableBody = `<thead><tr><th><b>${group.day}</b></th></tr></thead>`
 
 		let { matches } = group
 
 		tableBody += '<tbody>'
 
 		matches.forEach(match => {
-			let { liveMatch, liveMatchTime, homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag, time } = match;
+			let { matchId, matchLink, liveMatch, liveMatchTime, homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag, time } = match;
 
 			if (match.futureMatch) {
-				tableBody += `<tr>
+				tableBody += `<tr data-id="${matchId}" data-article="${matchLink}">
 					<td>
 						<div class="matches">
 							<div class="match">
@@ -114,11 +142,13 @@ const updateView = (data) => {
 								<img src="${awayFlag}" class="flags"> ${awayTeam}
 							</div>
 						</div>
-						<div class="date"><b>${moment(time).format('hh:mm A')}</b></div>
+						<div class="date">
+							${moment(time).format('hh:mm A')}
+						</div>
 					</td>
 				</tr>`
 			} else {
-				tableBody += `<tr>
+				tableBody += `<tr data-id="${matchId}" data-article="${matchLink}" class="selectable ${liveMatch ? `js-followMatch` : ``}">
 					<td>
 						<div class="matches">
 							<div class="match">
@@ -131,7 +161,7 @@ const updateView = (data) => {
 							</div>
 						</div>
 						<div class="date">
-							${liveMatch ? `<span class="icon icon-record live">${liveMatchTime ? `&nbsp;(${liveMatchTime})&nbsp;` : ``}</span>` : `FT`}
+							${liveMatch && liveMatchTime ? `<span class="live">${liveMatchTime}</span>` : `FT`}
 						</div>
 					</td>
 				</tr>`
@@ -154,9 +184,9 @@ const switchTab = (activeTab) => {
 	document.querySelector(`.tabContent${inactiveTab}`).classList.add('hidden')
 }
 
-// Refresh data every 10 minutes
-const tenMinutes = 10 * 60 * 1000
-setInterval(updateData, tenMinutes)
+// Refresh data every 1 minute
+const oneMinutes = 1 * 60 * 1000
+setInterval(updateData, oneMinutes)
 
 // Update initial weather when loaded
 document.addEventListener('DOMContentLoaded', updateData)

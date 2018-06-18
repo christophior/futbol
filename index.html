@@ -6,6 +6,11 @@
 	<title>Weather</title>
 	<link rel="stylesheet" href="./vendor/css/photon.css" media="screen" charset="utf-8">
 	<link rel="stylesheet" href="./index.css" media="screen" charset="utf-8">
+	<!-- Scripts -->
+	<script>
+		delete module.exports
+	</script>
+	<script src="https://code.jquery.com/jquery-3.2.1.js"></script>
 	<script charset="utf-8">require('./index')</script>
 </head>
 
@@ -46,10 +51,10 @@
 					<button class="btn btn-default js-refresh-action">
 						<span class="icon icon-arrows-ccw js-refresh-action" title="Refresh"></span>
 					</button>
-
-					<button class="btn btn-default js-quit-action">
-						<span class="icon icon-cancel-circled js-quit-action" title="Quit"></span>
+					<button class="btn btn-default js-stop-following-action js-stop-button">
+						<span class="icon icon-cancel-circled js-stop-following-action" title="Stop Following Game"></span>
 					</button>
+					<button class="btn btn-default js-quit-action" title="Quit App">quit</button>
 				</div>
 			</div>
 
