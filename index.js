@@ -13,6 +13,9 @@ document.addEventListener('click', (event) => {
 		updateData();
 	} else if (event.target.classList.contains('js-quit-action')) {
 		window.close();
+	} else if (event.target.classList.contains('js-donate')) {
+		shell.openExternal("https://www.paypal.me/christophior/5");
+		event.preventDefault();
 	} else if (event.target.classList.contains('js-stop-following-action')) {
 		followedMatch = null;
 		updateData();
