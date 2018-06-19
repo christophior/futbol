@@ -1,16 +1,48 @@
-const { app, BrowserWindow, ipcMain, Tray } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Dialog } = require('electron');
 const path = require('path');
-const moment = require('moment');
+const { autoUpdater } = require('electron-updater');
+const isDev = require('electron-is-dev');
 
 const assetsDirectory = path.join(__dirname, 'assets');
 
 let tray = undefined;
 let window = undefined;
 
+autoUpdater.on('update-available', () => {
+	dialog.showMessageBox({
+		type: 'info',
+		title: 'Update available!',
+		message: 'Update found, would you like to update now?',
+		buttons: ['Sure', 'No']
+	}, (buttonIndex) => {
+		if (buttonIndex === 0) {
+			autoUpdater.downloadUpdate()
+		}
+	});
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+	dialog.showMessageBox({
+		title: 'Updates installing',
+		message: 'Application will restart to apply updates...'
+	}, () => {
+		setImmediate(() => autoUpdater.quitAndInstall())
+	});
+})
+
+autoUpdater.on('error', (error) => {
+	console.error(error);
+})
+
 // Don't show the app in the doc
 app.dock.hide();
 
 app.on('ready', () => {
+
+	if (!isDev) {
+		autoUpdater.checkForUpdates();
+	}
+
 	createTray();
 	createWindow();
 	showWindow();
@@ -82,6 +114,7 @@ const toggleWindow = () => {
 
 const showWindow = () => {
 	const position = getWindowPosition();
+	window.setVisibleOnAllWorkspaces(true);
 	window.setPosition(position.x, position.y, false);
 	window.show();
 	window.focus();

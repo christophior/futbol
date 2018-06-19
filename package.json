@@ -1,21 +1,42 @@
 {
 	"name": "WorldCup2018",
-	"productName": "World Cup 2018",
 	"version": "1.0.0",
+	"description": "Toolbar application for mac to keep track of soccer games. Follow live scores and schedules.",
+	"productName": "World Cup 2018",
+	"repository": "https://github.com/christophior/futbol",
 	"main": "main.js",
 	"license": "ISC",
 	"author": "Chris Villarreal",
 	"scripts": {
 		"start": "electron .",
-		"package": "electron-packager ./ --platform=darwin --arch=x64 --out=out --icon=./icon.icns --overwrite"
+		"pack": "electron-builder --dir",
+		"dist": "electron-builder --x64 --mac",
+		"publish": "electron-builder --x64 --mac -p always"
 	},
 	"homepage": "https://www.christophior.com",
 	"devDependencies": {
+		"electron-builder": "^20.15.1",
 		"electron-packager": "^7.3.0",
 		"electron-prebuilt": "^1.2.7"
 	},
 	"dependencies": {
 		"axios": "^0.18.0",
+		"electron-is-dev": "^0.3.0",
+		"electron-updater": "^2.21.10",
 		"moment": "^2.22.2"
+	},
+	"build": {
+		"appId": "com.christophior.soccer",
+		"productName": "World Cup 2018",
+		"publish": [
+			{
+				"provider": "github",
+				"repo": "futbol",
+				"owner": "christophior"
+			}
+		],
+		"mac": {
+			"category": "public.app-category.utilities"
+		}
 	}
 }
