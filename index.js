@@ -1,6 +1,10 @@
-const { ipcRenderer, shell } = require('electron')
+const { ipcRenderer, shell, webFrame } = require('electron')
 const axios = require('axios')
 const moment = require('moment')
+
+// prevents zooming of window contents
+webFrame.setVisualZoomLevelLimits(1, 1);
+webFrame.setLayoutZoomLevelLimits(0, 0);
 
 let followedMatch = null;
 
@@ -143,7 +147,7 @@ const updateView = (data) => {
 		let tableEntrys = []
 
 		data.forEach((group) => {
-			let tableBody = `<thead><tr><th><b>${group.day}</b></th></tr></thead>`
+			let tableBody = `<thead><tr><th>${group.day}</th></tr></thead>`
 
 			let { matches } = group
 
@@ -155,7 +159,7 @@ const updateView = (data) => {
 
 				if (match.futureMatch) {
 					tableBody += `
-				<tr data-id="${matchId}" data-article="${matchLink}">
+				<tr data-id="${matchId}" data-article="${matchLink}" class="selectable">
 					<td>
 						<div class="matches">
 							<div class="match">
@@ -166,7 +170,7 @@ const updateView = (data) => {
 							</div>
 						</div>
 						<div class="date">
-							${moment(time).format('hh:mm A')}
+							${moment(time).format('hh:mm a')}
 						</div>
 					</td>
 				</tr>`

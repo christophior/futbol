@@ -109,6 +109,9 @@ ipcMain.on('hide-window', () => {
 ipcMain.on('data-updated', (event, followedMatchData) => {
 	if (followedMatchData) {
 		let { homeTeam, homeScore, awayTeam, awayScore, liveMatchTime } = followedMatchData;
+
+		liveMatchTime = liveMatchTime === "0'" ? 'FT' : liveMatchTime;
+
 		tray.setTitle(`${homeTeam} ${homeScore} - ${awayScore} ${awayTeam} (${liveMatchTime})`);
 	} else {
 		tray.setTitle('');
