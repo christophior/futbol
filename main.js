@@ -62,7 +62,9 @@ const createTray = () => {
 
 
 		// Show devtools
-		window.openDevTools({ mode: 'detach' })
+		if (isDev) {
+			// window.openDevTools({ mode: 'detach' })
+		}
 	});
 }
 

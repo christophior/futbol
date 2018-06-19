@@ -16,7 +16,6 @@
 	"homepage": "https://www.christophior.com",
 	"devDependencies": {
 		"electron-builder": "^20.15.1",
-		"electron-packager": "^7.3.0",
 		"electron-prebuilt": "^1.2.7"
 	},
 	"dependencies": {
