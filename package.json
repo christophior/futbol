@@ -1,6 +1,6 @@
 {
 	"name": "WorldCup2018",
-	"version": "1.0.1",
+	"version": "1.0.0",
 	"description": "Toolbar application for mac to keep track of soccer games. Follow live scores and schedules.",
 	"productName": "World Cup 2018",
 	"repository": "https://github.com/christophior/futbol",
@@ -15,8 +15,8 @@
 	},
 	"homepage": "https://www.christophior.com",
 	"devDependencies": {
-		"electron-builder": "^20.15.1",
-		"electron-prebuilt": "^1.2.7"
+		"electron": "2.0.2",
+		"electron-builder": "^20.15.1"
 	},
 	"dependencies": {
 		"axios": "^0.18.0",
