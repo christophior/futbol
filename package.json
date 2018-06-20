@@ -1,8 +1,8 @@
 {
 	"name": "WorldCup2018",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Toolbar application for mac to keep track of soccer games. Follow live scores and schedules.",
-	"productName": "World Cup 2018",
+	"productName": "Score!",
 	"repository": "https://github.com/christophior/futbol",
 	"main": "main.js",
 	"license": "ISC",
@@ -26,7 +26,7 @@
 	},
 	"build": {
 		"appId": "com.christophior.soccer",
-		"productName": "World Cup 2018",
+		"productName": "Score!",
 		"publish": [
 			{
 				"provider": "github",
