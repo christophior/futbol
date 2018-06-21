@@ -1,0 +1,130 @@
+{
+	"Russia": {
+		"code": "rus",
+		"id": "43965"
+	},
+	"Uruguay": {
+		"code": "uru",
+		"id": "43930"
+	},
+	"Egypt": {
+		"code": "egy",
+		"id": "43855"
+	},
+	"Saudi Arabia": {
+		"code": "ksa",
+		"id": "43835"
+	},
+	"Portugal": {
+		"code": "por",
+		"id": "43963"
+	},
+	"Spain": {
+		"code": "esp",
+		"id": "43969"
+	},
+	"Iran": {
+		"code": "irn",
+		"id": "43817"
+	},
+	"Morocco": {
+		"code": "mar",
+		"id": "43872"
+	},
+	"France": {
+		"code": "fra",
+		"id": "43946"
+	},
+	"Denmark": {
+		"code": "den",
+		"id": "43941"
+	},
+	"Australia": {
+		"code": "aus",
+		"id": "43976"
+	},
+	"Peru": {
+		"code": "per",
+		"id": "43929"
+	},
+	"Croatia": {
+		"code": "cro",
+		"id": "43938"
+	},
+	"Argentina": {
+		"code": "arg",
+		"id": "43922"
+	},
+	"Iceland": {
+		"code": "isl",
+		"id": "43951"
+	},
+	"Nigeria": {
+		"code": "nga",
+		"id": "43876"
+	},
+	"Serbia": {
+		"code": "srb",
+		"id": "1902465"
+	},
+	"Brazil": {
+		"code": "bra",
+		"id": "43924"
+	},
+	"Switzerland": {
+		"code": "sui",
+		"id": "43971"
+	},
+	"Costa Rica": {
+		"code": "crc",
+		"id": "43901"
+	},
+	"Mexico": {
+		"code": "mex",
+		"id": "43911"
+	},
+	"Sweden": {
+		"code": "swe",
+		"id": "43970"
+	},
+	"Germany": {
+		"code": "ger",
+		"id": "43948"
+	},
+	"Korea Republic": {
+		"code": "kor",
+		"id": "43822"
+	},
+	"Belgium": {
+		"code": "bel",
+		"id": "43935"
+	},
+	"England": {
+		"code": "eng",
+		"id": "43942"
+	},
+	"Tunisia": {
+		"code": "tun",
+		"id": "43888"
+	},
+	"Panama": {
+		"code": "pan",
+		"id": "43914"
+	},
+	"Senegal": {
+		"code": "sen",
+		"id": "43879"
+	},
+	"Japan": {
+		"code": "jpn",
+		"id": "43819"
+	},
+	"Poland": {
+		"code": "pol",
+		"id": "43962"
+	},
+	"Colombia": {
+		"code": "col",
+		"id": "43926"
+	}
+}

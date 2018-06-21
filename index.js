@@ -1,6 +1,5 @@
-const { ipcRenderer, shell, webFrame } = require('electron')
-const axios = require('axios')
-const moment = require('moment')
+const { ipcRenderer, shell, webFrame } = require('electron');
+const updateData = require('./data');
 
 // prevents zooming of window contents
 webFrame.setVisualZoomLevelLimits(1, 1);
@@ -14,7 +13,9 @@ document.addEventListener('click', (event) => {
 		shell.openExternal(event.target.href);
 		event.preventDefault();
 	} else if (event.target.classList.contains('js-refresh-action')) {
-		updateData();
+		$('.spinner').removeClass('hidden');
+		$('.window-content').addClass('spinnerShowing');
+		updateData(followedMatch);
 	} else if (event.target.classList.contains('js-quit-action')) {
 		window.close();
 	} else if (event.target.classList.contains('js-donate')) {
@@ -22,7 +23,7 @@ document.addEventListener('click', (event) => {
 		event.preventDefault();
 	} else if (event.target.classList.contains('js-stop-following-action')) {
 		followedMatch = null;
-		updateData();
+		updateData(followedMatch);
 		$('.js-stop-button').addClass('hidden');
 		ipcRenderer.send('hide-window');
 	} else if (event.target.classList.contains('js-tab1')) {
@@ -44,165 +45,10 @@ document.addEventListener('click', (event) => {
 			shell.openExternal(article);
 			event.preventDefault();
 		}
-		updateData();
+		updateData(followedMatch);
 		ipcRenderer.send('hide-window');
 	}
 })
-
-const updateData = () => {
-	getData((data) => {
-		console.log('Got data!')
-		console.log(data);
-		let followedMatchData = null;
-
-		if (followedMatch) {
-			followedMatchData = data.find(m => m.matchId == followedMatch);
-		}
-
-		ipcRenderer.send('data-updated', followedMatchData)
-		updateView(groupByDays(data))
-	})
-}
-
-const getData = (next) => {
-	console.log(`Getting data`)
-	const scheduleUrl = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`,
-		liveUrl = `https://api.fifa.com/api/v1/live/football/now?language=en-GB`,
-		groupsUrl = ``;
-
-	axios.all([axios.get(scheduleUrl), axios.get(liveUrl)])
-		.then(axios.spread(function (response, response2) {
-			let data = response.data && response.data.Results || [],
-				liveData = response2.data && response2.data.Results || [];
-
-			return next(normalizeData(substituteLiveData(data, liveData)));
-		}))
-		.catch(function (error) {
-			console.log(error)
-			console.error('Please try again later.');
-			return next([]);
-		})
-}
-
-const substituteLiveData = (data, liveData) => {
-	data.forEach((match, index) => {
-		let isLiveMatch = match.MatchStatus === 3;
-		let foundLiveMatch = isLiveMatch ? liveData.find(m => m.IdMatch == match.IdMatch) : null;
-
-		if (isLiveMatch && foundLiveMatch) {
-			data[index].MatchTime = foundLiveMatch.MatchTime
-		}
-	});
-
-	return data;
-}
-
-const normalizeData = (list) => {
-	return list.map(match => {
-		let home = match.Home || {},
-			away = match.Away || {};
-
-		let opponentsTBD = !home.IdCountry || !away.IdCountry,
-			previousDayMatch = match.MatchStatus !== 3 && moment(match.Date).diff(moment(), 'days') < 0;
-
-		return opponentsTBD || previousDayMatch ? null : {
-			time: match.Date,
-			futureMatch: home.Score === null || away.Score === null || (match.MatchStatus !== 0 && match.MatchStatus !== 3),
-			liveMatch: match.MatchStatus === 3,
-			liveMatchTime: match.MatchTime || '',
-			matchId: match.IdMatch,
-			matchLink: `https://www.fifa.com/worldcup/matches/match/${match.IdMatch}/#match-summary`,
-			homeTeam: home.TeamName[0].Description,
-			homeFlag: `assets/flags/${(home.IdCountry || '').toLowerCase()}.png`,
-			homeScore: home.Score,
-			awayTeam: away.TeamName[0].Description,
-			awayFlag: `assets/flags/${(away.IdCountry || '').toLowerCase()}.png`,
-			awayScore: away.Score
-		};
-	}).filter(m => m !== null);
-};
-
-const groupByDays = (list) => {
-	let days = [];
-
-	list.forEach(match => {
-		if (days.length === 0 || days[days.length - 1].day !== moment(match.time).format('MMMM DD')) {
-			days.push({
-				day: moment(match.time).format('MMMM DD'),
-				matches: [match]
-			})
-		} else {
-			days[days.length - 1].matches.push(match)
-		}
-	})
-
-	return days;
-};
-
-const updateView = (data) => {
-	// no data
-	if (data.length === 0) {
-		$('.tabContent1').html('<div class="summary"><b>Problem Loading Data!</b></div>');
-	} else {
-		let tableEntrys = []
-
-		data.forEach((group) => {
-			let tableBody = `<thead><tr><th>${group.day}</th></tr></thead>`
-
-			let { matches } = group
-
-			tableBody += '<tbody>'
-
-			matches.forEach(match => {
-				let { matchId, matchLink, liveMatch, liveMatchTime, time } = match;
-				let { homeTeam, homeScore, homeFlag, awayTeam, awayScore, awayFlag } = match;
-
-				if (match.futureMatch) {
-					tableBody += `
-				<tr data-id="${matchId}" data-article="${matchLink}" class="selectable">
-					<td>
-						<div class="matches">
-							<div class="match">
-								<img src="${homeFlag}" class="flags"> ${homeTeam}
-							</div>
-							<div class="match">
-								<img src="${awayFlag}" class="flags"> ${awayTeam}
-							</div>
-						</div>
-						<div class="date">
-							${moment(time).format('hh:mm a')}
-						</div>
-					</td>
-				</tr>`
-				} else {
-					tableBody += `
-				<tr data-id="${matchId}" data-article="${matchLink}" class="selectable ${liveMatch ? 'js-followMatch' : ''} ${matchId == followedMatch ? 'followedMatch' : ''}">
-					<td>
-						<div class="matches">
-							<div class="match">
-								<img src="${homeFlag}" class="flags"> ${homeTeam}
-								<b class="score">${homeScore}</b>
-							</div>
-							<div class="match">
-								<img src="${awayFlag}" class="flags"> ${awayTeam}
-								<b class="score">${awayScore}</b>
-							</div>
-						</div>
-						<div class="date">
-							${liveMatch && liveMatchTime ? `<span class="live">${liveMatchTime}</span>` : `FT`}
-						</div>
-					</td>
-				</tr>`
-				}
-			});
-
-			tableBody += '</tbody>'
-			tableEntrys.push(tableBody);
-		});
-
-		$('.tabContent1').html(`<table class="table">${tableEntrys.join('')}</table>`);
-	}
-}
 
 const switchTab = (activeTab) => {
 	let inactiveTab = activeTab === '1' ? '2' : '1';
@@ -214,8 +60,8 @@ const switchTab = (activeTab) => {
 }
 
 // Refresh data every 1 minute
-const refreshRate = 1 * 60 * 1000
-setInterval(updateData, refreshRate)
+const refreshRate = 1 * 6 * 1000
+setInterval(updateData.bind(followedMatch), refreshRate);
 
-// Update initial weather when loaded
-document.addEventListener('DOMContentLoaded', updateData)
+// Update initial data when loaded
+document.addEventListener('DOMContentLoaded', updateData.bind(followedMatch));
