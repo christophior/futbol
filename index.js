@@ -60,8 +60,8 @@ const switchTab = (activeTab) => {
 }
 
 // Refresh data every 1 minute
-const refreshRate = 1 * 6 * 1000
-setInterval(updateData.bind(followedMatch), refreshRate);
+const refreshRate = 1 * 60 * 1000;
+setInterval(() => updateData(followedMatch), refreshRate);
 
 // Update initial data when loaded
-document.addEventListener('DOMContentLoaded', updateData.bind(followedMatch));
+document.addEventListener('DOMContentLoaded', () => updateData(followedMatch));
