@@ -118,13 +118,22 @@ th {
 	background: #f1f1f1;
 }
 
+.followedMatch:hover {
+	background: linear-gradient(to right, #92b974, #6fa986);
+}
+
 .selectable:active {
 	color: white;
-	background: #cccccc;
+	background: #999;
 }
 
 .followedMatch {
-	background: #bdffad;
+	background: linear-gradient(to right, #92b974, #6fa986);
+	color: white;
+}
+
+.followedMatch .live {
+	color: white;
 }
 
 .matches {
