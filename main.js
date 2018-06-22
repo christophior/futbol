@@ -8,13 +8,27 @@ const assetsDirectory = path.join(__dirname, 'assets');
 let tray = undefined;
 let window = undefined;
 
+// update logic
+const checkForUpdate = () => {
+	autoUpdater.checkForUpdates();
+}
+
+autoUpdater.on('update-downloaded', (info) => {
+	autoUpdater.quitAndInstall();
+});
+
+
+// update rate, 1hr
+const updateRate = 60 * 60 * 1000;
+setInterval(checkForUpdate, updateRate);
+
 // Don't show the app in the doc
 app.dock.hide();
 
 app.on('ready', () => {
 
 	if (!isDev) {
-		autoUpdater.checkForUpdatesAndNotify();
+		checkForUpdate();
 	}
 
 	createTray();
