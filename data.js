@@ -47,8 +47,8 @@ const getGroupData = (next) => {
 			return next(processGroupsData(groupsData));
 		})
 		.catch(error => {
-			console.log('error getting group data');
-			return next([]);
+			console.log('error getting backup group data', error);
+			return getBackupGroupData(next);
 		})
 };
 
@@ -179,10 +179,12 @@ const processBackupGroupsData = (groupsData) => {
 			group: group.name,
 			teams: group.standings.map(team => {
 				console.log(team);
-				let countryData = countryConfig[team.team.name] || {};
+				let name = team.team && team.team.name || '',
+					countryCode = team.team && team.team.code || '',
+					countryData = countryConfig[team.team.name] || Object.values(countryConfig).find(c => c.code === countryCode.toLowerCase()) || {};
 
 				return {
-					name: team.team.name,
+					name: name,
 					rank: team.pos,
 					points: team.pts,
 					flag: team.team.code ? `assets/flags/${team.team.code.toLowerCase()}.png` : '',
