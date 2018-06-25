@@ -39,7 +39,7 @@ const checkFailed = (then) => {
 }
 
 const getGroupData = (next) => {
-	console.log(`Getting schedule data`);
+	console.log(`Getting group data`);
 	axios.get('http://api.football-data.org/v1/competitions/467/leagueTable', { 'headers': { 'X-Auth-Token': 'b089c2ca8f7643b4b2188e0a96a2ae1f' } })
 		.then(response => {
 			console.log(response);
@@ -51,6 +51,20 @@ const getGroupData = (next) => {
 			return next([]);
 		})
 };
+
+const getBackupGroupData = (next) => {
+	console.log(`Getting backup group data`);
+	axios.get('https://cdn.rawgit.com/openfootball/world-cup.json/b8cc34ee/2018/worldcup.standings.json')
+		.then(response => {
+			let groupsData = response.data && response.data.groups;
+			console.log(groupsData)
+			return next(processBackupGroupsData(groupsData));
+		})
+		.catch(error => {
+			console.log('error getting group data', error);
+			return next([]);
+		})
+}
 
 const getScheduleData = (next) => {
 	console.log(`Getting schedule data`);
@@ -141,7 +155,7 @@ const processGroupsData = (groupsData) => {
 	console.log(groupsData);
 	return Object.keys(groupsData).map(group => {
 		return {
-			group,
+			group: `Group ${group}`,
 			teams: groupsData[group].map(team => {
 				let name = team.team,
 					countryData = countryConfig[name] || {};
@@ -153,6 +167,27 @@ const processGroupsData = (groupsData) => {
 					flag: `assets/flags/${countryData.code}.png`,
 					url: countryData.id ? `https://www.fifa.com/worldcup/teams/team/${countryData.id}/` : ''
 				}
+			})
+		}
+	});
+};
+
+const processBackupGroupsData = (groupsData) => {
+	console.log(groupsData);
+	return groupsData.map(group => {
+		return {
+			group: group.name,
+			teams: group.standings.map(team => {
+				console.log(team);
+				let countryData = countryConfig[team.team.name] || {};
+
+				return {
+					name: team.team.name,
+					rank: team.pos,
+					points: team.pts,
+					flag: team.team.code ? `assets/flags/${team.team.code.toLowerCase()}.png` : '',
+					url: countryData.id ? `https://www.fifa.com/worldcup/teams/team/${countryData.id}/` : ''
+				};
 			})
 		}
 	});

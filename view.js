@@ -62,7 +62,7 @@ const renderTab2 = (groupData) => {
 		tableEntrys.push(tableHeader);
 
 		groupData.forEach((group) => {
-			let tableBody = `<tbody><tr class="groupTitle"><td>Group ${group.group}</td><td></td><td></td></tr>`;
+			let tableBody = `<tbody><tr class="groupTitle"><td>${group.group}</td><td></td><td></td></tr>`;
 
 			group.teams.forEach(team => {
 				tableBody += getGroupStandingHtml(team);
