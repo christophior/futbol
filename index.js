@@ -1,5 +1,5 @@
 const { ipcRenderer, shell, webFrame } = require('electron');
-const updateData = require('./data');
+const { updateScheduleData, updateGroupData } = require('./data');
 
 // prevents zooming of window contents
 webFrame.setVisualZoomLevelLimits(1, 1);
@@ -15,7 +15,7 @@ document.addEventListener('click', (event) => {
 	} else if (event.target.classList.contains('js-refresh-action')) {
 		$('.spinner').removeClass('hidden');
 		$('.window-content').addClass('spinnerShowing');
-		updateData(followedMatch);
+		updateScheduleData(followedMatch);
 	} else if (event.target.classList.contains('js-quit-action')) {
 		window.close();
 	} else if (event.target.classList.contains('js-donate')) {
@@ -23,7 +23,7 @@ document.addEventListener('click', (event) => {
 		event.preventDefault();
 	} else if (event.target.classList.contains('js-stop-following-action')) {
 		followedMatch = null;
-		updateData(followedMatch);
+		updateScheduleData(followedMatch);
 		$('.js-stop-button').addClass('hidden');
 		ipcRenderer.send('hide-window');
 	} else if (event.target.classList.contains('js-tab1')) {
@@ -45,7 +45,7 @@ document.addEventListener('click', (event) => {
 			shell.openExternal(article);
 			event.preventDefault();
 		}
-		updateData(followedMatch);
+		updateScheduleData(followedMatch);
 		ipcRenderer.send('hide-window');
 	}
 })
@@ -59,9 +59,16 @@ const switchTab = (activeTab) => {
 	document.querySelector(`.tabContent${inactiveTab}`).classList.add('hidden')
 }
 
-// Refresh data every 1 minute
-const refreshRate = 1 * 60 * 1000;
-setInterval(() => updateData(followedMatch), refreshRate);
+// Refresh schedule data every 1 minute
+const scheduleRefreshRate = 1 * 60 * 1000;
+setInterval(() => updateScheduleData(followedMatch), scheduleRefreshRate);
+
+// Refresh group data every hour
+const groupsRefreshRate = 60 * 60 * 1000;
+setInterval(updateGroupData, groupsRefreshRate);
 
 // Update initial data when loaded
-document.addEventListener('DOMContentLoaded', () => updateData(followedMatch));
+document.addEventListener('DOMContentLoaded', () => {
+	updateScheduleData(followedMatch);
+	updateGroupData();
+});

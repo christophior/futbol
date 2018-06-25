@@ -1,11 +1,18 @@
 const moment = require('moment');
 
-const updateView = (scheduleData, groupData, followedMatch) => {
+const updateScheduleView = (scheduleData, followedMatch) => {
 	// if spinner is present, remove
 	$('.spinner').addClass('hidden');
 	$('.window-content').removeClass('spinnerShowing');
 
 	renderTab1(scheduleData, followedMatch);
+};
+
+const updateGroupView = (groupData) => {
+	// if spinner is present, remove
+	$('.spinner').addClass('hidden');
+	$('.window-content').removeClass('spinnerShowing');
+
 	renderTab2(groupData);
 };
 
@@ -134,4 +141,7 @@ const getGroupStandingHtml = (team) => {
 		</tr>`;
 };
 
-module.exports = updateView;
+module.exports = {
+	updateScheduleView,
+	updateGroupView
+};

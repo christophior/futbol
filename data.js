@@ -1,13 +1,13 @@
 const { ipcRenderer } = require('electron');
 const axios = require('axios')
 const moment = require('moment')
-const updateView = require('./view');
+const { updateScheduleView, updateGroupView } = require('./view');
 
 const countryConfig = require('./countries.json');
 
-const updateData = (followedMatch) => {
-	getData((scheduleData, groupsData) => {
-		console.log('Got data!')
+const updateScheduleData = (followedMatch) => {
+	getScheduleData((scheduleData) => {
+		console.log('Got data!');
 		let followedMatchData = null;
 
 		if (followedMatch) {
@@ -15,7 +15,14 @@ const updateData = (followedMatch) => {
 		}
 
 		ipcRenderer.send('data-updated', followedMatchData)
-		updateView(groupByDays(scheduleData), groupsData, followedMatch);
+		updateScheduleView(groupByDays(scheduleData), followedMatch);
+	});
+}
+
+const updateGroupData = () => {
+	getGroupData(groupData => {
+		console.log('got group data!');
+		updateGroupView(groupData);
 	});
 }
 
@@ -31,26 +38,38 @@ const checkFailed = (then) => {
 	}
 }
 
-const getData = (next) => {
-	console.log(`Getting data`)
-	const scheduleUrl = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`,
-		liveUrl = `https://api.fifa.com/api/v1/live/football/now?language=en-GB`,
-		groupsUrl = `http://api.football-data.org/v1/competitions/467/leagueTable`;
+const getGroupData = (next) => {
+	console.log(`Getting schedule data`);
+	axios.get('http://api.football-data.org/v1/competitions/467/leagueTable', { 'headers': { 'X-Auth-Token': 'b089c2ca8f7643b4b2188e0a96a2ae1f' } })
+		.then(response => {
+			console.log(response);
+			let groupsData = response.data && response.data.standings;
+			return next(processGroupsData(groupsData));
+		})
+		.catch(error => {
+			console.log('error getting group data');
+			return next([]);
+		})
+};
 
-	const promises = [axios.get(scheduleUrl), axios.get(liveUrl), axios.get(groupsUrl, { 'headers': { 'X-Auth-Token': 'c1722da05652470587a097e1054b6d43' } })];
+const getScheduleData = (next) => {
+	console.log(`Getting schedule data`);
+	const scheduleUrl = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`,
+		liveUrl = `https://api.fifa.com/api/v1/live/football/now?language=en-GB`;
+
+	const promises = [axios.get(scheduleUrl), axios.get(liveUrl)];
 	const promisesResolved = promises.map(promise => promise.catch(error => ({ error })))
 
 	axios.all(promisesResolved)
-		.then(checkFailed(([scheduleResponse, liveResponse, groupsResponse]) => {
+		.then(checkFailed(([scheduleResponse, liveResponse]) => {
 			let data = scheduleResponse.data && scheduleResponse.data.Results || [],
-				liveData = liveResponse.data && liveResponse.data.Results || [],
-				groupsData = groupsResponse.data && groupsResponse.data.standings;
+				liveData = liveResponse.data && liveResponse.data.Results || [];
 
-			return next(processScheduleData(substituteLiveData(data, liveData)), processGroupsData(groupsData));
+			return next(processScheduleData(substituteLiveData(data, liveData)));
 		}))
 		.catch((err) => {
 			console.log('Failures during API calls', err);
-			let scheduleData, groupsData;
+			let scheduleData;
 
 			if (err[0].status === 200 && err[1].status === 200) {
 				let scheduleResponse = err[0].data && err[0].data.Results || [],
@@ -62,12 +81,7 @@ const getData = (next) => {
 				scheduleData = processScheduleData(substituteLiveData(scheduleResponse, []));
 			}
 
-			if (err[2].status === 200) {
-				let groupsResponse = err[2].data && err[2].data.standings;
-				groupsData = processGroupsData(groupsResponse);
-			}
-
-			return next(scheduleData, groupsData);
+			return next(scheduleData);
 		});
 }
 
@@ -173,4 +187,7 @@ const teams = {
 };
 
 
-module.exports = updateData;
+module.exports = {
+	updateScheduleData,
+	updateGroupData
+};
