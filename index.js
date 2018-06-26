@@ -21,6 +21,9 @@ document.addEventListener('click', (event) => {
 	} else if (event.target.classList.contains('js-donate')) {
 		shell.openExternal("https://www.paypal.me/christophior/5");
 		event.preventDefault();
+	} else if (event.target.classList.contains('js-tweet')) {
+		shell.openExternal("https://twitter.com/intent/tweet?text=I%27m%20following%20the%202018%20World%20Cup%20live%20using%20the%20Score%21%20mac%20app%20by%20%40christophior%2C%20check%20it%20out%20at%20https%3A%2F%2Fgumroad.com%2Fl%2Fworldcupmactoolbar");
+		event.preventDefault();
 	} else if (event.target.classList.contains('js-stop-following-action')) {
 		followedMatch = null;
 		updateScheduleData(followedMatch);

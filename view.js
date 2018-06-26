@@ -124,7 +124,7 @@ const getPastPresentMatchHtml = (match, followedMatch) => {
 
 const getGroupStandingHtml = (team) => {
 	return `
-		<tr data-article="${team.url}" class="selectable">
+		<tr data-article="${team.url}" class="groupRows selectable">
 			<td class="groupRank">
 				${team.rank}
 			</td>
