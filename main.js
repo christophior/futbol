@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
+const { Positioner } = require('electron-positioner');
 const path = require('path');
 const { autoUpdater } = require('electron-updater');
 const isDev = require('electron-is-dev');
@@ -16,7 +17,6 @@ const checkForUpdate = () => {
 autoUpdater.on('update-downloaded', (info) => {
 	autoUpdater.quitAndInstall();
 });
-
 
 // update rate, 1hr
 const updateRate = 60 * 60 * 1000;
@@ -57,16 +57,15 @@ const createTray = () => {
 }
 
 const getWindowPosition = () => {
-	const windowBounds = window.getBounds();
-	const trayBounds = tray.getBounds();
+	const positioner = new Positioner(window),
+		trayBounds = tray.getBounds();
 
-	// Center window horizontally below the tray icon
-	const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2));
+	let position = positioner.calculate('trayCenter', trayBounds);
 
-	// Position window 4 pixels vertically below the tray icon
-	const y = Math.round(trayBounds.y + trayBounds.height + 4);
+	// move window down 2 extra pixels
+	position.y = position.y + 2;
 
-	return { x: x, y: y };
+	return position;
 }
 
 const createWindow = () => {
