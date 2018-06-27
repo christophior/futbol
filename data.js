@@ -118,7 +118,8 @@ const processScheduleData = (matchList) => {
 			MatchStatus: matchStatus,
 			Date: time,
 			IdMatch: matchId,
-			MatchTime: liveMatchTime = ''
+			MatchTime: liveMatchTime = '',
+			StageName: stage = [{}]
 		} = match;
 
 		let home = match.Home || {},
@@ -137,6 +138,7 @@ const processScheduleData = (matchList) => {
 		return opponentsTBD || previousDayMatch ? null : {
 			time,
 			matchId,
+			tournamentStage: stage[0].Description,
 			isFutureMatch,
 			isLiveMatch,
 			liveMatchTime,
@@ -213,16 +215,39 @@ const groupByDays = (list) => {
 				matches: [match]
 			})
 		} else {
-			lastDayObject.matches.push(match)
+			lastDayObject.matches.push(match);
 		}
 	})
 
 	return dayObjects;
 };
 
-const teams = {
-};
+// returns array of objects with matches for each stage
+// [ { stage: 'Round of 16', matches: [...] } ]
+const groupByStages = (list) => {
+	let stagesObjects = [];
 
+	list.forEach(match => {
+		let noStageObjectsPresent = stagesObjects.length === 0,
+			lastStageObject = stagesObjects[stagesObjects.length - 1],
+			matchStage = match.tournamentStage;
+
+		if (noStageObjectsPresent || lastStageObject.stage !== matchStage) {
+			stagesObjects.push({
+				stage: matchStage,
+				matches: [match]
+			});
+		} else {
+			lastStageObject.matches.push(match);
+		}
+	});
+
+	if (stagesObjects[0] && stagesObjects[0].stage === "First stage") {
+		stagesObjects.splice(0, 1);
+	}
+
+	return stagesObjects.reverse();
+};
 
 module.exports = {
 	updateScheduleData,

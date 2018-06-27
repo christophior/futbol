@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain, Tray } = require('electron');
-const { Positioner } = require('electron-positioner');
+const Positioner = require('electron-positioner');
 const path = require('path');
 const { autoUpdater } = require('electron-updater');
 const isDev = require('electron-is-dev');
