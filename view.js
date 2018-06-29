@@ -13,8 +13,16 @@ const updateGroupView = (groupData) => {
 	$('.spinner').addClass('hidden');
 	$('.window-content').removeClass('spinnerShowing');
 
-	renderTab2(groupData);
+	renderTab2Groups(groupData);
 };
+
+const updateStagesView = (stagesData) => {
+	// if spinner is present, remove
+	$('.spinner').addClass('hidden');
+	$('.window-content').removeClass('spinnerShowing');
+
+	renderTab2Stages(stagesData);
+}
 
 const renderTab1 = (scheduleData, followedMatch) => {
 	// no data present
@@ -46,7 +54,7 @@ const renderTab1 = (scheduleData, followedMatch) => {
 	}
 };
 
-const renderTab2 = (groupData) => {
+const renderTab2Groups = (groupData) => {
 	if (!groupData || groupData.length === 0) {
 		$('.tabContent2').html('<div class="summary"><b>Problem Loading Data!</b></div>');
 	} else {
@@ -71,6 +79,31 @@ const renderTab2 = (groupData) => {
 			tableBody += '</tbody>'
 			tableEntrys.push(tableBody);
 		});
+
+		$('.tabContent2').html(`<table class="table">${tableEntrys.join('')}</table>`);
+	}
+};
+
+const renderTab2Stages = (stagesData) => {
+	if (!stagesData || stagesData.length === 0) {
+		$('.tabContent2').html('<div class="summary"><b>Problem Loading Data!</b></div>');
+	} else {
+		let tableEntrys = []
+		stagesData.forEach((stagesObject) => {
+			let tableBody = `<thead><tr><th>${stagesObject.stage}</th></tr></thead>`
+
+			let { matches } = stagesObject
+
+			tableBody += '<tbody>'
+
+			matches.forEach(match => {
+				tableBody += getStageMatchHtml(match)
+			});
+
+			tableBody += '</tbody>'
+			tableEntrys.push(tableBody);
+		});
+
 
 		$('.tabContent2').html(`<table class="table">${tableEntrys.join('')}</table>`);
 	}
@@ -122,6 +155,33 @@ const getPastPresentMatchHtml = (match, followedMatch) => {
 		</tr>`;
 };
 
+const getStageMatchHtml = (match) => {
+	let { matchId, matchLink, time } = match;
+	let { homeTeam, homeFlag, awayTeam, awayFlag } = match;
+
+	let homeTeamHtml = homeTeam ? `
+		<div class="match">
+			<img src="${homeFlag}" class="flags"> ${homeTeam}
+		</div>` : 
+		`<div class="match">TBD</div>`;
+
+	let awayTeamHtml = awayTeam ? `
+		<div class="match">
+			<img src="${awayFlag}" class="flags"> ${awayTeam}
+		</div>` : 
+		`<div class="match">TBD</div>`;
+
+	return `
+		<tr data-id="${matchId}" data-article="${matchLink}" class="selectable">
+			<td class="matches">
+				<div class="matchesWrapper">
+					${homeTeamHtml}
+					${awayTeamHtml}
+				<div>
+			</td>
+		</tr>`;
+};
+
 const getGroupStandingHtml = (team) => {
 	return `
 		<tr data-article="${team.url}" class="groupRows selectable">
@@ -143,5 +203,6 @@ const getGroupStandingHtml = (team) => {
 
 module.exports = {
 	updateScheduleView,
-	updateGroupView
+	updateGroupView,
+	updateStagesView
 };

@@ -1,7 +1,7 @@
 const { ipcRenderer } = require('electron');
 const axios = require('axios')
 const moment = require('moment')
-const { updateScheduleView, updateGroupView } = require('./view');
+const { updateScheduleView, updateStagesView } = require('./view');
 
 const countryConfig = require('./countries.json');
 
@@ -16,6 +16,7 @@ const updateScheduleData = (followedMatch) => {
 
 		ipcRenderer.send('data-updated', followedMatchData)
 		updateScheduleView(groupByDays(scheduleData), followedMatch);
+		updateStagesView(groupByStages(scheduleData));
 	});
 }
 
@@ -132,7 +133,7 @@ const processScheduleData = (matchList) => {
 		let isLiveMatch = matchStatus === 3,
 			isPastMatch = matchStatus === 0,
 			isFutureMatch = homeScore === null || awayScore === null || (!isPastMatch && !isLiveMatch),
-			opponentsTBD = !home.IdCountry || !away.IdCountry,
+			opponentsTBD = !home.IdCountry && !away.IdCountry,
 			previousDayMatch = !isLiveMatch && moment(match.Date).diff(moment(), 'days') < 0;
 
 		return opponentsTBD || previousDayMatch ? null : {
@@ -145,8 +146,8 @@ const processScheduleData = (matchList) => {
 			matchLink,
 			homeScore,
 			awayScore,
-			homeTeam: home.TeamName[0].Description,
-			awayTeam: away.TeamName[0].Description,
+			homeTeam: home && home.TeamName ? home.TeamName[0].Description : 'TBD',
+			awayTeam: away && away.TeamName ? away.TeamName[0].Description : 'TBD',
 			homeFlag: `assets/flags/${(home.IdCountry || '').toLowerCase()}.png`,
 			awayFlag: `assets/flags/${(away.IdCountry || '').toLowerCase()}.png`
 		};

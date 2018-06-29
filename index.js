@@ -1,5 +1,5 @@
 const { ipcRenderer, shell, webFrame } = require('electron');
-const { updateScheduleData, updateGroupData } = require('./data');
+const { updateScheduleData } = require('./data');
 
 // prevents zooming of window contents
 webFrame.setVisualZoomLevelLimits(1, 1);
@@ -66,12 +66,7 @@ const switchTab = (activeTab) => {
 const scheduleRefreshRate = 1 * 60 * 1000;
 setInterval(() => updateScheduleData(followedMatch), scheduleRefreshRate);
 
-// Refresh group data every hour
-const groupsRefreshRate = 60 * 60 * 1000;
-setInterval(updateGroupData, groupsRefreshRate);
-
 // Update initial data when loaded
 document.addEventListener('DOMContentLoaded', () => {
 	updateScheduleData(followedMatch);
-	updateGroupData();
 });
