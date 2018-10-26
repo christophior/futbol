@@ -1,9 +1,14 @@
 const { ipcRenderer } = require('electron');
 const axios = require('axios')
 const moment = require('moment')
-const { updateScheduleView, updateStagesView } = require('./view');
+const { updateScheduleView } = require('./view');
 
-const countryConfig = require('./countries.json');
+const leagues = {
+	UEFA: {
+		season: '2000011097',
+		competition: '2000001041'
+	}
+};
 
 const updateScheduleData = (followedMatch) => {
 	getScheduleData((scheduleData) => {
@@ -16,14 +21,6 @@ const updateScheduleData = (followedMatch) => {
 
 		ipcRenderer.send('data-updated', followedMatchData)
 		updateScheduleView(groupByDays(scheduleData), followedMatch);
-		updateStagesView(groupByStages(scheduleData));
-	});
-}
-
-const updateGroupData = () => {
-	getGroupData(groupData => {
-		console.log('got group data!');
-		updateGroupView(groupData);
 	});
 }
 
@@ -39,37 +36,11 @@ const checkFailed = (then) => {
 	}
 }
 
-const getGroupData = (next) => {
-	console.log(`Getting group data`);
-	axios.get('http://api.football-data.org/v1/competitions/467/leagueTable', { 'headers': { 'X-Auth-Token': 'b089c2ca8f7643b4b2188e0a96a2ae1f' } })
-		.then(response => {
-			console.log(response);
-			let groupsData = response.data && response.data.standings;
-			return next(processGroupsData(groupsData));
-		})
-		.catch(error => {
-			console.log('error getting backup group data', error);
-			return getBackupGroupData(next);
-		})
-};
-
-const getBackupGroupData = (next) => {
-	console.log(`Getting backup group data`);
-	axios.get('https://cdn.rawgit.com/openfootball/world-cup.json/b8cc34ee/2018/worldcup.standings.json')
-		.then(response => {
-			let groupsData = response.data && response.data.groups;
-			console.log(groupsData)
-			return next(processBackupGroupsData(groupsData));
-		})
-		.catch(error => {
-			console.log('error getting group data', error);
-			return next([]);
-		})
-}
+const getSchedulesUrl = ({ season, competition }) => `https://api.fifa.com/api/v1/calendar/matches?idseason=${season}&idcompetition=${competition}&language=en-GB&count=1000`
 
 const getScheduleData = (next) => {
 	console.log(`Getting schedule data`);
-	const scheduleUrl = `https://api.fifa.com/api/v1/calendar/matches?idseason=254645&idcompetition=17&language=en-GB&count=100`,
+	const scheduleUrl = getSchedulesUrl(leagues.UEFA),
 		liveUrl = `https://api.fifa.com/api/v1/live/football/now?language=en-GB`;
 
 	const promises = [axios.get(scheduleUrl), axios.get(liveUrl)];
@@ -113,7 +84,20 @@ const substituteLiveData = (data, liveData) => {
 	return data;
 }
 
+const formatImage = url => url.replace('{format}', 'sq').replace('{size}', '2');
+
+const formatName = ({ TeamName = '' }) => {
+	let name = TeamName ? TeamName[0].Description : 'TBD';
+
+	if (name.length > 18) {
+		name = `${name.substring(0, 15)}...`
+	}
+
+	return name;
+}
+
 const processScheduleData = (matchList) => {
+
 	return matchList.map(match => {
 		let {
 			MatchStatus: matchStatus,
@@ -134,9 +118,9 @@ const processScheduleData = (matchList) => {
 			isPastMatch = matchStatus === 0,
 			isFutureMatch = homeScore === null || awayScore === null || (!isPastMatch && !isLiveMatch),
 			opponentsTBD = !home.IdCountry && !away.IdCountry,
-			previousDayMatch = !isLiveMatch && moment(match.Date).diff(moment(), 'days') < 0;
+			oldMatch = !isLiveMatch && moment(match.Date).diff(moment(), 'days') < -3;
 
-		return opponentsTBD || previousDayMatch ? null : {
+		return opponentsTBD || oldMatch ? null : {
 			time,
 			matchId,
 			tournamentStage: stage[0].Description,
@@ -146,56 +130,12 @@ const processScheduleData = (matchList) => {
 			matchLink,
 			homeScore,
 			awayScore,
-			homeTeam: home && home.TeamName ? home.TeamName[0].Description : 'TBD',
-			awayTeam: away && away.TeamName ? away.TeamName[0].Description : 'TBD',
-			homeFlag: `assets/flags/${(home.IdCountry || '').toLowerCase()}.png`,
-			awayFlag: `assets/flags/${(away.IdCountry || '').toLowerCase()}.png`
+			homeTeam: formatName(home),
+			awayTeam: formatName(away),
+			homeFlag: formatImage(home.PictureUrl),
+			awayFlag: formatImage(away.PictureUrl)
 		};
 	}).filter(filterOutNull);
-};
-
-const processGroupsData = (groupsData) => {
-	console.log(groupsData);
-	return Object.keys(groupsData).map(group => {
-		return {
-			group: `Group ${group}`,
-			teams: groupsData[group].map(team => {
-				let name = team.team,
-					countryData = countryConfig[name] || {};
-
-				return {
-					name,
-					rank: team.rank,
-					points: team.points,
-					flag: `assets/flags/${countryData.code}.png`,
-					url: countryData.id ? `https://www.fifa.com/worldcup/teams/team/${countryData.id}/` : ''
-				}
-			})
-		}
-	});
-};
-
-const processBackupGroupsData = (groupsData) => {
-	console.log(groupsData);
-	return groupsData.map(group => {
-		return {
-			group: group.name,
-			teams: group.standings.map(team => {
-				console.log(team);
-				let name = team.team && team.team.name || '',
-					countryCode = team.team && team.team.code || '',
-					countryData = countryConfig[team.team.name] || Object.values(countryConfig).find(c => c.code === countryCode.toLowerCase()) || {};
-
-				return {
-					name: name,
-					rank: team.pos,
-					points: team.pts,
-					flag: team.team.code ? `assets/flags/${team.team.code.toLowerCase()}.png` : '',
-					url: countryData.id ? `https://www.fifa.com/worldcup/teams/team/${countryData.id}/` : ''
-				};
-			})
-		}
-	});
 };
 
 const filterOutNull = m => m !== null;
@@ -223,34 +163,6 @@ const groupByDays = (list) => {
 	return dayObjects;
 };
 
-// returns array of objects with matches for each stage
-// [ { stage: 'Round of 16', matches: [...] } ]
-const groupByStages = (list) => {
-	let stagesObjects = [];
-
-	list.forEach(match => {
-		let noStageObjectsPresent = stagesObjects.length === 0,
-			lastStageObject = stagesObjects[stagesObjects.length - 1],
-			matchStage = match.tournamentStage;
-
-		if (noStageObjectsPresent || lastStageObject.stage !== matchStage) {
-			stagesObjects.push({
-				stage: matchStage,
-				matches: [match]
-			});
-		} else {
-			lastStageObject.matches.push(match);
-		}
-	});
-
-	if (stagesObjects[0] && stagesObjects[0].stage === "First stage") {
-		stagesObjects.splice(0, 1);
-	}
-
-	return stagesObjects.reverse();
-};
-
 module.exports = {
-	updateScheduleData,
-	updateGroupData
+	updateScheduleData
 };

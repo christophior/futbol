@@ -8,22 +8,6 @@ const updateScheduleView = (scheduleData, followedMatch) => {
 	renderTab1(scheduleData, followedMatch);
 };
 
-const updateGroupView = (groupData) => {
-	// if spinner is present, remove
-	$('.spinner').addClass('hidden');
-	$('.window-content').removeClass('spinnerShowing');
-
-	renderTab2Groups(groupData);
-};
-
-const updateStagesView = (stagesData) => {
-	// if spinner is present, remove
-	$('.spinner').addClass('hidden');
-	$('.window-content').removeClass('spinnerShowing');
-
-	renderTab2Stages(stagesData);
-}
-
 const renderTab1 = (scheduleData, followedMatch) => {
 	// no data present
 	if (scheduleData.length === 0) {
@@ -54,61 +38,6 @@ const renderTab1 = (scheduleData, followedMatch) => {
 	}
 };
 
-const renderTab2Groups = (groupData) => {
-	if (!groupData || groupData.length === 0) {
-		$('.tabContent2').html('<div class="summary"><b>Problem Loading Data!</b></div>');
-	} else {
-		let tableEntrys = []
-		let tableHeader = `<thead>
-				<tr>
-					<th>Rank</th>
-					<th>Name</th>
-					<th>Points</th>
-				</tr>
-			</thead>`;
-
-		tableEntrys.push(tableHeader);
-
-		groupData.forEach((group) => {
-			let tableBody = `<tbody><tr class="groupTitle"><td>${group.group}</td><td></td><td></td></tr>`;
-
-			group.teams.forEach(team => {
-				tableBody += getGroupStandingHtml(team);
-			});
-
-			tableBody += '</tbody>'
-			tableEntrys.push(tableBody);
-		});
-
-		$('.tabContent2').html(`<table class="table">${tableEntrys.join('')}</table>`);
-	}
-};
-
-const renderTab2Stages = (stagesData) => {
-	if (!stagesData || stagesData.length === 0) {
-		$('.tabContent2').html('<div class="summary"><b>Problem Loading Data!</b></div>');
-	} else {
-		let tableEntrys = []
-		stagesData.forEach((stagesObject) => {
-			let tableBody = `<thead><tr><th>${stagesObject.stage}</th></tr></thead>`
-
-			let { matches } = stagesObject
-
-			tableBody += '<tbody>'
-
-			matches.forEach(match => {
-				tableBody += getStageMatchHtml(match)
-			});
-
-			tableBody += '</tbody>'
-			tableEntrys.push(tableBody);
-		});
-
-
-		$('.tabContent2').html(`<table class="table">${tableEntrys.join('')}</table>`);
-	}
-};
-
 const getFutureMatchHtml = (match) => {
 	let { matchId, matchLink, time } = match;
 	let { homeTeam, homeFlag, awayTeam, awayFlag } = match;
@@ -118,10 +47,12 @@ const getFutureMatchHtml = (match) => {
 			<td class="matches">
 				<div class="matchesWrapper">
 					<div class="match">
-						<img src="${homeFlag}" class="flags"> ${homeTeam}
+						<img src="${homeFlag}" class="flags">
+						<div class="matchName">${homeTeam}</div>
 					</div>
 					<div class="match">
-						<img src="${awayFlag}" class="flags"> ${awayTeam}
+						<img src="${awayFlag}" class="flags">
+						<div class="matchName">${awayTeam}</div>
 					</div>
 				</div>
 			</td>
@@ -140,11 +71,13 @@ const getPastPresentMatchHtml = (match, followedMatch) => {
 			<td class="matches">
 				<div class="matchesWrapper">
 					<div class="match">
-						<img src="${homeFlag}" class="flags"> ${homeTeam}
+						<img src="${homeFlag}" class="flags">
+						<div class="matchName">${homeTeam}</div>
 						<b class="score">${homeScore}</b>
 					</div>
 					<div class="match">
-						<img src="${awayFlag}" class="flags"> ${awayTeam}
+						<img src="${awayFlag}" class="flags">
+						<div class="matchName">${awayTeam}</div>
 						<b class="score">${awayScore}</b>
 					</div>
 				<div>
@@ -162,13 +95,13 @@ const getStageMatchHtml = (match) => {
 	let homeTeamHtml = homeTeam ? `
 		<div class="match">
 			<img src="${homeFlag}" class="flags"> ${homeTeam}
-		</div>` : 
+		</div>` :
 		`<div class="match">TBD</div>`;
 
 	let awayTeamHtml = awayTeam ? `
 		<div class="match">
 			<img src="${awayFlag}" class="flags"> ${awayTeam}
-		</div>` : 
+		</div>` :
 		`<div class="match">TBD</div>`;
 
 	return `
@@ -202,7 +135,5 @@ const getGroupStandingHtml = (team) => {
 };
 
 module.exports = {
-	updateScheduleView,
-	updateGroupView,
-	updateStagesView
+	updateScheduleView
 };
