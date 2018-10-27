@@ -1,14 +1,15 @@
 const moment = require('moment');
 
-const updateScheduleView = (scheduleData, followedMatch) => {
+const updateScheduleView = (league, scheduleData, followedMatch) => {
+	$('.title').text(league.name);
 	// if spinner is present, remove
 	$('.spinner').addClass('hidden');
 	$('.window-content').removeClass('spinnerShowing');
 
-	renderTab1(scheduleData, followedMatch);
+	renderBody(scheduleData, followedMatch);
 };
 
-const renderTab1 = (scheduleData, followedMatch) => {
+const renderBody = (scheduleData, followedMatch) => {
 	// no data present
 	if (scheduleData.length === 0) {
 		$('.tabContent1').html('<div class="summary"><b>Problem Loading Data!</b></div>');
@@ -84,52 +85,6 @@ const getPastPresentMatchHtml = (match, followedMatch) => {
 			</td>
 			<td class="date">
 				${isLiveMatch && liveMatchTime ? `<span class="live">${liveMatchTime}</span>` : `FT`}
-			</td>
-		</tr>`;
-};
-
-const getStageMatchHtml = (match) => {
-	let { matchId, matchLink, time } = match;
-	let { homeTeam, homeFlag, awayTeam, awayFlag } = match;
-
-	let homeTeamHtml = homeTeam ? `
-		<div class="match">
-			<img src="${homeFlag}" class="flags"> ${homeTeam}
-		</div>` :
-		`<div class="match">TBD</div>`;
-
-	let awayTeamHtml = awayTeam ? `
-		<div class="match">
-			<img src="${awayFlag}" class="flags"> ${awayTeam}
-		</div>` :
-		`<div class="match">TBD</div>`;
-
-	return `
-		<tr data-id="${matchId}" data-article="${matchLink}" class="selectable">
-			<td class="matches">
-				<div class="matchesWrapper">
-					${homeTeamHtml}
-					${awayTeamHtml}
-				<div>
-			</td>
-		</tr>`;
-};
-
-const getGroupStandingHtml = (team) => {
-	return `
-		<tr data-article="${team.url}" class="groupRows selectable">
-			<td class="groupRank">
-				${team.rank}
-			</td>
-
-			<td class="groupName">
-				<div>
-					<img src="${team.flag}" class="flags"> ${team.name}
-				</div>
-			</td>
-
-			<td class="groupStats">
-				${team.points}
 			</td>
 		</tr>`;
 };
