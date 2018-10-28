@@ -59,7 +59,13 @@ body {
 }
 
 .toolbar-header {
+	padding: 10px 0;
 	/* border-bottom: 1px solid var(--border-color); */
+}
+
+.leagueSelector {
+	border: none;
+	background-color: var(--background-color);
 }
 
 .toolbar-header .title {

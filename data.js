@@ -1,21 +1,21 @@
 const { ipcRenderer } = require('electron');
 const axios = require('axios')
 const moment = require('moment')
-const { updateScheduleView } = require('./view');
+const { updateScheduleView, createSelectorView } = require('./view');
+const settings = require('electron-settings');
 
 const leagues = [
-		{
-			name: 'UEFA Europa League',
-			season: '2000011097',
-			competition: '2000001041'
-		},
-		{
-			name: 'FIFA World Cup',
-			season: '254645',
-			competition: '17'
-		}
-	],
-	selectedLeague = 0;
+	{
+		name: 'UEFA Europa League',
+		season: '2000011097',
+		competition: '2000001041'
+	},
+	{
+		name: 'FIFA World Cup',
+		season: '254645',
+		competition: '17'
+	}
+];
 
 const updateScheduleData = (followedMatch) => {
 	getScheduleData((scheduleData) => {
@@ -27,7 +27,7 @@ const updateScheduleData = (followedMatch) => {
 		}
 
 		ipcRenderer.send('data-updated', followedMatchData)
-		updateScheduleView(leagues[selectedLeague], groupByDays(scheduleData), followedMatch);
+		updateScheduleView(leagues[settings.get('selectedLeague', 0)], groupByDays(scheduleData), followedMatch);
 	});
 }
 
@@ -47,7 +47,7 @@ const getSchedulesUrl = ({ season, competition }) => `https://api.fifa.com/api/v
 
 const getScheduleData = (next) => {
 	console.log(`Getting schedule data`);
-	const scheduleUrl = getSchedulesUrl(leagues[selectedLeague]),
+	const scheduleUrl = getSchedulesUrl(leagues[settings.get('selectedLeague', 0)]),
 		liveUrl = `https://api.fifa.com/api/v1/live/football/now?language=en-GB`;
 
 	const promises = [axios.get(scheduleUrl), axios.get(liveUrl)];
@@ -96,11 +96,7 @@ const formatImage = url => url.replace('{format}', 'sq').replace('{size}', '2');
 const formatName = ({ TeamName = '' }) => {
 	let name = TeamName ? TeamName[0].Description : 'TBD';
 
-	if (name.length > 18) {
-		name = `${name.substring(0, 15)}...`
-	}
-
-	return name;
+	return name.length > 18 ? `${name.substring(0, 15)}...` : name;
 }
 
 const processScheduleData = (matchList) => {
@@ -112,17 +108,17 @@ const processScheduleData = (matchList) => {
 
 	matchList.forEach(match => {
 		let {
-				MatchStatus: matchStatus,
-				Date: time,
-				IdMatch: matchId,
-				MatchTime: liveMatchTime = '',
-				StageName: stage = [{}]
-			} = match,
+			MatchStatus: matchStatus,
+			Date: time,
+			IdMatch: matchId,
+			MatchTime: liveMatchTime = '',
+			StageName: stage = [{}]
+		} = match,
 			home = match.Home || {},
 			away = match.Away || {},
 			{ Score: homeScore } = home,
 			{ Score: awayScore } = away,
-			matchLink = `https://www.fifa.com/worldcup/matches/match/${matchId}/#match-summary`,
+			matchLink = ``,
 			isLiveMatch = matchStatus === 3,
 			isPastMatch = matchStatus === 0,
 			isFutureMatch = homeScore === null || awayScore === null || (!isPastMatch && !isLiveMatch);
@@ -147,7 +143,8 @@ const processScheduleData = (matchList) => {
 		});
 	});
 
-	return matches.past.slice(Math.max(matches.past.length-5, 0)).concat(matches.future);
+	let pastMatches = matches.past.slice(Math.max(matches.past.length - 8, 0));
+	return pastMatches.concat(matches.future);
 };
 // returns array of objects with matches for each day
 // [ { day: 'June 1', matches: [...] } ]
@@ -173,5 +170,6 @@ const groupByDays = (list) => {
 };
 
 module.exports = {
+	createLeagueSelector: () => createSelectorView(leagues),
 	updateScheduleData
 };
