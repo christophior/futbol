@@ -4,17 +4,34 @@ const moment = require('moment')
 const { updateScheduleView, createSelectorView } = require('./view');
 const settings = require('electron-settings');
 
+// find competitions: https://api.fifa.com/api/v1/competitions/search?name=champions
+// get season, https://api.fifa.com/api/v1/seasons?idCompetition=
 const leagues = [
+	{
+		name: 'UEFA Champions League',
+		season: '2000011096',
+		competition: '2000001032'
+	},
 	{
 		name: 'UEFA Europa League',
 		season: '2000011097',
 		competition: '2000001041'
 	},
 	{
-		name: 'FIFA World Cup',
-		season: '254645',
-		competition: '17'
-	}
+		name: 'Premier League',
+		season: '2000011099',
+		competition: '2000000000'
+	},
+	{
+		name: 'La Liga',
+		season: '2000011137',
+		competition: '2000000037'
+	},
+	{
+		name: 'MLS',
+		season: '2000011023',
+		competition: '2000000103'
+	},
 ];
 
 const updateScheduleData = (followedMatch) => {
@@ -143,7 +160,7 @@ const processScheduleData = (matchList) => {
 		});
 	});
 
-	let pastMatches = matches.past.slice(Math.max(matches.past.length - 8, 0));
+	let pastMatches = matches.past.slice(Math.max(matches.past.length - 5, 0));
 	return pastMatches.concat(matches.future);
 };
 // returns array of objects with matches for each day

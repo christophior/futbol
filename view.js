@@ -10,6 +10,7 @@ const createSelectorView = (leagues) => {
 	});
 
 	select.val(settings.get('selectedLeague', 0));
+	select.blur();
 }
 
 const updateScheduleView = (league, scheduleData, followedMatch) => {

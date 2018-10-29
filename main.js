@@ -33,7 +33,7 @@ app.on('ready', () => {
 
 	createTray();
 	createWindow();
-	showWindow();
+	// showWindow();
 })
 
 // Quit the app when the window is closed
@@ -51,7 +51,7 @@ const createTray = () => {
 
 		// Show devtools
 		// if (isDev) {
-		window.openDevTools({ mode: 'detach' })
+		// window.openDevTools({ mode: 'detach' })
 		// }
 	});
 }
