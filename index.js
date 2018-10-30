@@ -36,29 +36,29 @@ document.addEventListener('click', (event) => {
 		updateScheduleData(followedMatch);
 		$('.js-stop-button').addClass('hidden');
 		ipcRenderer.send('hide-window');
+		// }
+		// else if (event.target.classList.contains('js-tab1')) {
+		// 	switchTab('1');
+		// } else if (event.target.classList.contains('js-tab2')) {
+		// 	switchTab('2');
+	} else if ($(event.target).closest('tr').hasClass('selectable')) {
+		let tr = $(event.target).closest('tr')
+		// follow match
+		if (tr.hasClass('js-followMatch')) {
+			let matchId = tr.data('id');
+			console.log('following', matchId);
+			followedMatch = matchId;
+			$('.js-stop-button').removeClass('hidden');
+		}
+		// else { // open article if a past match
+		// 	let article = tr.data('article');
+		// 	console.log(article);
+		// 	shell.openExternal(article);
+		// 	event.preventDefault();
+		// }
+		updateScheduleData(followedMatch);
+		ipcRenderer.send('hide-window');
 	}
-	// else if (event.target.classList.contains('js-tab1')) {
-	// 	switchTab('1');
-	// } else if (event.target.classList.contains('js-tab2')) {
-	// 	switchTab('2');
-	// } else if ($(event.target).closest('tr').hasClass('selectable')) {
-	// 	let tr = $(event.target).closest('tr')
-	// 	// follow match
-	// 	if (tr.hasClass('js-followMatch')) {
-	// 		let matchId = tr.data('id');
-	// 		console.log('following', matchId);
-	// 		followedMatch = matchId;
-	// 		$('.js-stop-button').removeClass('hidden');
-
-	// 	} else { // open article if a past match
-	// 		let article = tr.data('article');
-	// 		console.log(article);
-	// 		shell.openExternal(article);
-	// 		event.preventDefault();
-	// 	}
-	// 	updateScheduleData(followedMatch);
-	// 	ipcRenderer.send('hide-window');
-	// }
 })
 
 // const switchTab = (activeTab) => {
