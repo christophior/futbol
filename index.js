@@ -22,8 +22,6 @@ document.addEventListener('click', (event) => {
 		shell.openExternal(event.target.href);
 		event.preventDefault();
 	} else if (event.target.classList.contains('js-refresh-action')) {
-		$('.spinner').removeClass('hidden');
-		$('.window-content').addClass('spinnerShowing');
 		updateScheduleData(followedMatch);
 	} else if (event.target.classList.contains('js-quit-action')) {
 		window.close();

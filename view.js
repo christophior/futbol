@@ -1,6 +1,16 @@
 const moment = require('moment');
 const settings = require('electron-settings');
 
+const showSpinner = () => {
+	$('.spinner').removeClass('hidden');
+	$('.window-content').addClass('spinnerShowing');
+}
+
+const hideSpinner = () => {
+	$('.spinner').addClass('hidden');
+	$('.window-content').removeClass('spinnerShowing');
+}
+
 const createSelectorView = (leagues) => {
 	var select = $('<select>').attr('id', 'leagueSelector').attr('class', 'js-select-league leagueSelector');
 	$('.toolbar-header').append(select);
@@ -14,10 +24,7 @@ const createSelectorView = (leagues) => {
 }
 
 const updateScheduleView = (league, scheduleData, followedMatch) => {
-	// if spinner is present, remove
-	$('.spinner').addClass('hidden');
-	$('.window-content').removeClass('spinnerShowing');
-
+	hideSpinner();
 	renderBody(scheduleData, followedMatch);
 };
 
@@ -103,5 +110,7 @@ const getPastPresentMatchHtml = (match, followedMatch) => {
 
 module.exports = {
 	updateScheduleView,
-	createSelectorView
+	createSelectorView,
+	showSpinner,
+	hideSpinner
 };

@@ -1,7 +1,7 @@
 const { ipcRenderer } = require('electron');
 const axios = require('axios')
 const moment = require('moment')
-const { updateScheduleView, createSelectorView } = require('./view');
+const { updateScheduleView, createSelectorView, showSpinner } = require('./view');
 const settings = require('electron-settings');
 
 // find competitions: https://api.fifa.com/api/v1/competitions/search?name=champions
@@ -35,6 +35,7 @@ const leagues = [
 ];
 
 const updateScheduleData = (followedMatch) => {
+	showSpinner();
 	getScheduleData((scheduleData) => {
 		console.log('Got data!');
 		let followedMatchData = null;
