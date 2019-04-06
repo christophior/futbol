@@ -28,8 +28,8 @@ const leagues = [
 		competition: '2000000037'
 	},
 	{
-		name: 'MLS',
-		season: '2000011023',
+		name: 'Major League Soccer',
+		season: '2000011236',
 		competition: '2000000103'
 	},
 ];
@@ -109,7 +109,7 @@ const substituteLiveData = (data, liveData) => {
 	return data;
 }
 
-const formatImage = url => url.replace('{format}', 'sq').replace('{size}', '2');
+const formatImage = url => url ? url.replace('{format}', 'sq').replace('{size}', '2') : '';
 
 const formatName = ({ TeamName = '' }) => {
 	let name = TeamName ? TeamName[0].Description : 'TBD';
@@ -141,6 +141,8 @@ const processScheduleData = (matchList) => {
 			isPastMatch = matchStatus === 0,
 			isFutureMatch = homeScore === null || awayScore === null || (!isPastMatch && !isLiveMatch);
 
+		liveMatchTime = liveMatchTime || 'HT';
+
 		// figure out if it's a future or past match and add to that list
 		let listToAddTo = isPastMatch ? matches.past : matches.future;
 
@@ -161,7 +163,9 @@ const processScheduleData = (matchList) => {
 		});
 	});
 
-	let pastMatches = matches.past.slice(Math.max(matches.past.length - 5, 0));
+	matches.future = matches.future.filter(({ homeTeam, awayTeam }) => homeTeam !== 'TBD' && awayTeam !== 'TBD')
+
+	let pastMatches = matches.past.slice(Math.max(matches.past.length - 3, 0));
 	return pastMatches.concat(matches.future);
 };
 // returns array of objects with matches for each day
