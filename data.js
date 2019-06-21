@@ -8,7 +8,7 @@ const settings = require('electron-settings');
 // get season, https://api.fifa.com/api/v1/seasons?idCompetition=
 const leagues = [
 	{
-		name: "FIFA Woman's World Cup",
+		name: "FIFA Women's World Cup",
 		season: '278513',
 		competition: '103'
 	},
