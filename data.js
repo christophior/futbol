@@ -4,13 +4,22 @@ const moment = require('moment')
 const { updateScheduleView, createSelectorView, showSpinner } = require('./view');
 const settings = require('electron-settings');
 
+// find confederations: https://api.fifa.com/api/v1/confederations/search?name=
+// find teams: https://api.fifa.com/api/v1/teams/search?name=brazil
 // find competitions: https://api.fifa.com/api/v1/competitions/search?name=champions
 // get season, https://api.fifa.com/api/v1/seasons?idCompetition=
+// live matches https://api.fifa.com/api/v1/live/football/now?language=en-GB
+
 const leagues = [
 	{
 		name: "FIFA Women's World Cup",
 		season: '278513',
 		competition: '103'
+	},
+	{
+		name: "Copa América",
+		season: '400041115',
+		competition: '502'
 	},
 	{
 		name: 'UEFA Champions League',
