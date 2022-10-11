@@ -16,7 +16,7 @@
 	"homepage": "https://www.christophior.com",
 	"devDependencies": {
 		"electron": "2.0.2",
-		"electron-builder": "^20.15.1"
+		"electron-builder": "^20.44.4"
 	},
 	"dependencies": {
 		"axios": "^0.18.0",
